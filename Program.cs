@@ -14,15 +14,15 @@ namespace ClimateMeter.TestClient
                 .WithConsoleLogger()
                 .Build();
 
-            connection.On<Guid>("OnDeviceRegistered", async id =>
+            connection.On<Guid>("DeviceRegistered", async id =>
             {
                 Console.WriteLine($"Registered with Id: {id}");
-                await connection.InvokeAsync("OnSensorReading", id, 26.0, 43.0);
+                await connection.InvokeAsync("AddSensorReading", id, 26.0, 43.0);
             });
 
             await connection.StartAsync();
 
-            await connection.InvokeAsync("OnRegisterDevice", "Test Device", "Test description");
+            await connection.InvokeAsync("RegisterDevice", "Test Device", "Test description");
 
             Console.ReadKey();
 
