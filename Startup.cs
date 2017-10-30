@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using DarkXaHTeP.CommandLine;
 using Microsoft.Extensions.CommandLineUtils;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -9,6 +10,13 @@ namespace ClimateMeter.TestClient
 {
     public class Startup
     {
+        private readonly IConfiguration _configuration;
+
+        public Startup(IConfiguration configuration)
+        {
+            _configuration = configuration;
+        }
+        
         public void Configure(IApplicationBuilder builder, TestSignalRClient client, ILogger<Startup> log)
         {
             builder.OnExecute(async () =>
@@ -49,6 +57,7 @@ namespace ClimateMeter.TestClient
 
         public void ConfigureServices(IServiceCollection services)
         {
+            services.Configure<AuthenticationSettings>(_configuration.GetSection("Authentication"));
             services.AddSingleton<TestSignalRClient>();
         }
     }
