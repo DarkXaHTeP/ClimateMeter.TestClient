@@ -2,6 +2,9 @@
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Clients.ActiveDirectory;
+using Newtonsoft.Json;
 
 namespace ClimateMeter.TestClient
 {
@@ -9,9 +12,11 @@ namespace ClimateMeter.TestClient
     {
         private readonly ILogger<TestSignalRClient> _log;
         private readonly HubConnection _connection;
+        private readonly AuthenticationSettings _authSettings;
 
-        public TestSignalRClient(ILogger<TestSignalRClient> log)
+        public TestSignalRClient(IOptions<AuthenticationSettings> authOptions, ILogger<TestSignalRClient> log)
         {
+            _authSettings = authOptions.Value;
             _log = log;
             _connection = new HubConnectionBuilder()
                 .WithUrl("http://localhost:5000/socket/device")
@@ -30,6 +35,14 @@ namespace ClimateMeter.TestClient
             {
                 registeredTaskSource.SetResult(id);
             });
+            
+            var credential = new ClientCredential(_authSettings.ClientId, _authSettings.ClientSecret);
+            
+            var authenticationContext = new AuthenticationContext($"{_authSettings.Instance}/{_authSettings.TenantId}", false);
+
+            var token = authenticationContext.AcquireTokenAsync(_authSettings.Resource, credential);
+            _log.LogInformation("Acquired access token for the server");
+            _log.LogInformation(JsonConvert.SerializeObject(token, Formatting.Indented));
 
             await _connection.StartAsync();
             _log.LogInformation("Connected to server");
