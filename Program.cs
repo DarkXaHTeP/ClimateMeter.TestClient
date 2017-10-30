@@ -1,4 +1,5 @@
 ﻿using DarkXaHTeP.CommandLine;
+using DarkXaHTeP.Extensions.Configuration.Consul;
 using Microsoft.Extensions.Logging;
 
 namespace ClimateMeter.TestClient
@@ -11,6 +12,10 @@ namespace ClimateMeter.TestClient
                 .ConfigureLogging(logging =>
                 {
                     logging.AddConsole();
+                })
+                .ConfigureAppConfiguration(config =>
+                {
+                    config.AddConsul("ClimateMeter.TestClient");
                 })
                 .UseStartup<Startup>()
                 .Build();
