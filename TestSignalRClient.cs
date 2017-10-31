@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Threading.Tasks;
+using ClimateMeter.TestClient.JWT;
 using Microsoft.AspNetCore.SignalR.Client;
+using Microsoft.AspNetCore.Sockets;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Clients.ActiveDirectory;
@@ -14,15 +16,19 @@ namespace ClimateMeter.TestClient
         private readonly HubConnection _connection;
         private readonly AuthenticationSettings _authSettings;
 
-        public TestSignalRClient(IOptions<AuthenticationSettings> authOptions, ILogger<TestSignalRClient> log)
+        public TestSignalRClient(IOptions<AuthenticationSettings> authOptions, ILoggerFactory loggerFactory)
         {
             _authSettings = authOptions.Value;
-            _log = log;
-            _connection = new HubConnectionBuilder()
+            _log = loggerFactory.CreateLogger<TestSignalRClient>();
+
+            var builder = new HubConnectionBuilder()
+                .WithJWTAuthentication(() => AcquireToken())
                 .WithUrl("http://localhost:5000/socket/device")
-                .WithJsonProtocol()
-                .WithConsoleLogger()
-                .Build();
+                .WithTransport(TransportType.LongPolling)
+                .WithMessagePackProtocol()
+                .WithLoggerFactory(loggerFactory);
+            
+            _connection = builder.Build();
         }
 
         public async Task<Guid> StartDevice()
@@ -35,14 +41,6 @@ namespace ClimateMeter.TestClient
             {
                 registeredTaskSource.SetResult(id);
             });
-            
-            var credential = new ClientCredential(_authSettings.ClientId, _authSettings.ClientSecret);
-            
-            var authenticationContext = new AuthenticationContext($"{_authSettings.Instance}/{_authSettings.TenantId}", false);
-
-            var token = authenticationContext.AcquireTokenAsync(_authSettings.Resource, credential);
-            _log.LogInformation("Acquired access token for the server");
-            _log.LogInformation(JsonConvert.SerializeObject(token, Formatting.Indented));
 
             await _connection.StartAsync();
             _log.LogInformation("Connected to server");
@@ -58,7 +56,7 @@ namespace ClimateMeter.TestClient
 
         public async Task AddSensorReading(Guid id, decimal temperature, decimal humidity)
         {
-            await _connection.InvokeAsync("AddSensorReading", id, 26.0, 43.0);
+            await _connection.InvokeAsync("AddSensorReading", id, 26.0m, 43.0m);
             _log.LogInformation($"Sent sensor readings: temp - {temperature}, humidity - {humidity}");
         }
 
@@ -66,6 +64,18 @@ namespace ClimateMeter.TestClient
         {
             await _connection.DisposeAsync();
             _log.LogInformation("Disconnected");
+        }
+
+        private async Task<string> AcquireToken()
+        {
+            var credential = new ClientCredential(_authSettings.ClientId, _authSettings.ClientSecret);
+            
+            var authenticationContext = new AuthenticationContext($"{_authSettings.Instance}/{_authSettings.TenantId}", false);
+
+            var token = await authenticationContext.AcquireTokenAsync(_authSettings.Resource, credential);
+            _log.LogInformation("Acquired access token for the server");
+
+            return token.AccessToken;
         }
     }
 }
