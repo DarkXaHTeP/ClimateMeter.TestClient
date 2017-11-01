@@ -24,7 +24,7 @@ namespace ClimateMeter.TestClient
             var builder = new HubConnectionBuilder()
                 .WithJWTAuthentication(() => AcquireToken())
                 .WithUrl("http://localhost:5000/socket/device")
-                .WithTransport(TransportType.LongPolling)
+                .WithTransport(TransportType.WebSockets)
                 .WithMessagePackProtocol()
                 .WithLoggerFactory(loggerFactory);
             
