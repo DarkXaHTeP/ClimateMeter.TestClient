@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Web;
 using Microsoft.AspNetCore.SignalR.Client;
+using Microsoft.AspNetCore.Sockets.Client;
 
 namespace ClimateMeter.TestClient.JWT
 {
@@ -35,6 +36,13 @@ namespace ClimateMeter.TestClient.JWT
 
         public IHubConnectionBuilder WithUrl(Uri url)
         {
+            return _connectionBuilder
+                .WithMessageHandler(new AuthorizationHttpMessageHandler(_accessTokenProvider))
+                .WithUrl(BuildConnectionUrl(url));
+        }
+
+        private Uri BuildConnectionUrl(Uri url)
+        {
             var uriBuilder = new UriBuilder(url);
             
             var queryString = HttpUtility.ParseQueryString(uriBuilder.Query);
@@ -48,9 +56,7 @@ namespace ClimateMeter.TestClient.JWT
 
             uriBuilder.Query = queryString.ToString();
 
-            return _connectionBuilder
-                .WithMessageHandler(new AuthorizationHttpMessageHandler(_accessTokenProvider))
-                .WithUrl(uriBuilder.Uri);
+            return uriBuilder.Uri;
         }
     }
 }
