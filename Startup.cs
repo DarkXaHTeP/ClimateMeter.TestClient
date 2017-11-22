@@ -30,15 +30,15 @@ namespace ClimateMeter.TestClient
 
             builder.Command("interval", command =>
             {
-                var everyOption = command.Option("--every", "Interval in seconds", CommandOptionType.SingleValue);
+                var everyOption = command.Option("--every", "Interval in seconds", CommandLineOptionType.SingleValue);
                 var iterationsOption = command.Option(
                     "--iterations", "Amount of iterations to run",
-                    CommandOptionType.SingleValue);
+                    CommandLineOptionType.SingleValue);
 
                 command.OnExecute(async () =>
                 {
-                    int every = everyOption.HasValue() ? Convert.ToInt32(everyOption.Value()) : 10;
-                    int iterations = iterationsOption.HasValue() ? Convert.ToInt32(iterationsOption.Value()) : Int32.MaxValue;
+                    int every = everyOption.HasValue() ? Convert.ToInt32(everyOption.Value) : 10;
+                    int iterations = iterationsOption.HasValue() ? Convert.ToInt32(iterationsOption.Value) : Int32.MaxValue;
 
                     Guid deviceId = await client.StartDevice();
 
