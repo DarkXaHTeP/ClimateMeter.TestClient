@@ -55,7 +55,7 @@ namespace ClimateMeter.TestClient
 
         public async Task AddSensorReading(Guid id, decimal temperature, decimal humidity)
         {
-            await _connection.InvokeAsync("AddSensorReading", id, 26.0m, 43.0m);
+            await _connection.InvokeAsync("AddSensorReading", id, temperature, humidity);
             _log.LogInformation($"Sent sensor readings: temp - {temperature}, humidity - {humidity}");
         }
 
