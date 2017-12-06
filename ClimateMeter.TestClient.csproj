@@ -6,7 +6,7 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="DarkXaHTeP.CommandLine" Version="1.0.1" />
-    <PackageReference Include="DarkXaHTeP.Extensions.Configuration.Consul" Version="1.0.0" />
+    <PackageReference Include="DarkXaHTeP.Extensions.Configuration.Consul" Version="1.0.1" />
     <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="1.0.0-alpha2-final" />
     <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="2.0.0" />
     <PackageReference Include="Microsoft.IdentityModel.Clients.ActiveDirectory" Version="3.17.2" />
